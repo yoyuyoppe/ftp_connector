@@ -1,4 +1,5 @@
 import argparse
+import shutil
 from sys import argv
 from ftplib import FTP, all_errors
 from Lib import tempfile
@@ -39,22 +40,17 @@ def get_orders(ftp):
     if ftp.pwd() != _cwd:
         ftp.cwd(_cwd)
 
-    #ftp.retrlines('LIST')
 
     count = 5
-    for files in walk(_cwd):
-        for file in files:
-            full_name = joinpath(_cwd, file)
-            # Name files on FTP
-            fname = str(file)
-            # Create local file
-            localfile = open(DIR_NEW_ORDRSP+'\%s' % fname, 'wb')
-            # Download and write ftp-file to local file
-            ftp.retrbinary('RETR %s' % fname, localfile.write())
+    for fname in ftp.nlst(_cwd):
+        # Create local file
+        localfile = open(DIR_NEW_ORDRSP+'\%s' % fname, 'wrb')
+        # Download and write ftp-file to local file
+        ftp.retrbinary('RETR %s' % fname, localfile.write, 1024)
 
-            #Close localfile
-            localfile.close()
-            count -= 1
+        #Close localfile
+        localfile.close()
+        count -= 1
 
         if count == 0:
             break
